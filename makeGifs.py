@@ -30,7 +30,7 @@ def drawText(draw, x, y, text, font):
 	# white text
 	draw.text((x, y),text,(255,255,255),font=font)
 
-def makeGif(source, sub_index, rand=False, no_quote=False, custom_subtitle="", frames=0):
+def makeGif(choice, sub_index, rand=False, no_quote=False, custom_subtitle="", frames=0):
 	config = ConfigParser.ConfigParser()
 	config.read("config.cfg")
 
@@ -38,7 +38,7 @@ def makeGif(source, sub_index, rand=False, no_quote=False, custom_subtitle="", f
 
 	vlc_path = config.get("general", "vlc_path")
 
-	video_path = config.get("general", "ep"+str(source)+"_path")
+	video_path = choice['path']
 	screencap_path = os.path.join(os.path.dirname(__file__), "screencaps")
 
 	# delete the contents of the screencap path
@@ -47,7 +47,7 @@ def makeGif(source, sub_index, rand=False, no_quote=False, custom_subtitle="", f
 		os.remove(os.path.join(screencap_path, file_name))
 
 	# read in the quotes for the selected movie
-	subs = pysrt.open(sub_files[source])
+	subs = pysrt.open(choice['sub_path'])
 
 	if rand:
 		sub_index = random.randint(0, len(subs)-1)
@@ -136,7 +136,7 @@ def makeGif(source, sub_index, rand=False, no_quote=False, custom_subtitle="", f
 		except IOError:
 			print 'empty frame found.'
 
-	filename = "star_wars.gif"
+	filename = choice['name'] + ".gif"
 
 
 	# create a fuckin' gif
