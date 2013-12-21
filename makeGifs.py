@@ -9,10 +9,33 @@ import ConfigParser
 import pysrt
 import random
 import subprocess
+import glob
 
 sub_files = {   4: 'subs/IV-A.New.Hope[1977]DvDrip-aXXo.srt',
 				5: 'subs/V-The.Empire.Strikes.Back[1980]DvDrip-aXXo.srt',
 				6: 'subs/VI-Return.Of.The.Jedi[1983]DvDrip-aXXo.srt' }
+
+def loadChoices(movies_path, subs_path):
+    # list all available srt files
+    index = 0
+    choices = []
+    sub_files = {}
+    subs_list = glob.glob(subs_path + "/*.srt")
+    for sub in subs_list:
+        # sub_files[index] = sub
+        name = sub[sub.rfind('/') + 1:sub.find('.srt')]
+        # TODO: find more elegant solution to solve srt ending with language code
+        path = []
+        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.mp4"))
+        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.mkv"))
+        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.avi"))
+        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.mpg"))
+        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.divx"))
+        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.m4v"))
+        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.mov"))
+        choices.append({ 'name': name, 'num': index, 'path': path[0], 'sub_path': sub})
+        index += 1
+    return choices
 
 def striptags(data):
 	# I'm a bad person, don't ever do this.
@@ -137,6 +160,8 @@ def makeGif(choice, sub_index, rand=False, no_quote=False, custom_subtitle="", f
 			print 'empty frame found.'
 
 	filename = choice['name'] + ".gif"
+	if rand:
+		filename = "random.gif"
 
 
 	# create a fuckin' gif

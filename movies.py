@@ -2,9 +2,10 @@
 
 import urwid
 import pysrt
-from makeGifs import makeGif
 import ConfigParser
-import glob
+
+from makeGifs import makeGif
+from makeGifs import loadChoices
 
 config = ConfigParser.ConfigParser()
 config.read("config.cfg")
@@ -13,21 +14,8 @@ config.sections()
 movies_path = config.get("general", "movies_path")
 subs_path = config.get("general", "subs_path")
 
-# list all available srt files
-index = 0
-choices = []
-sub_files = {}
-subs_list = glob.glob(subs_path + "/*.srt")
-for sub in subs_list:
-	# sub_files[index] = sub
-	name = sub[sub.rfind('/') + 1:sub.find('.srt')]
-	# TODO: find more elegant solution to solve srt ending with language code
-	path = []
-	path.extend(glob.glob(movies_path + "/" + name[:8] + "*.mp4"))
-	path.extend(glob.glob(movies_path + "/" + name[:8] + "*.mkv"))
-	path.extend(glob.glob(movies_path + "/" + name[:8] + "*.avi"))
-	choices.append({ 'name': name, 'num': index, 'path': path[0], 'sub_path': sub})
-	index += 1
+# get choices
+choices = loadChoices(movies_path, subs_path)
 
 source = 0
 index = 0
@@ -58,7 +46,6 @@ def search(button):
 		urwid.AttrMap(done, None, focus_map='reversed')]))
 
 def find_quotes(button, edit):
-	# subs = pysrt.open(sub_files[source])
 	subs = pysrt.open(choices[source]["sub_path"])
 	search = edit.edit_text.lower()
 

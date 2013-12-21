@@ -10,7 +10,7 @@ import subprocess
 from twython import Twython
 from base64 import b64encode
 from makeGifs import makeGif
-
+from makeGifs import loadChoices
 
 config = ConfigParser.ConfigParser()
 config.read("config.cfg")
@@ -25,30 +25,46 @@ OAUTH_TOKEN_SECRET = config.get("twitter", "oauth_token_secret")
 headers = {"Authorization": "Client-ID " + CLIENT_ID}
 url = "https://api.imgur.com/3/upload.json"
 
+movies_path = config.get("general", "movies_path")
+subs_path = config.get("general", "subs_path")
+
+# get choices
+choices = loadChoices(movies_path, subs_path)
+
 while True:
-	quote = makeGif(random.randint(4,6), 0, rand=True)
+	try:
+		choice = random.choice(choices)
+		quote = makeGif(choice, 0, rand=True)
+	except KeyboardInterrupt:
+		print "Ouch!"
+		exit()
+	except:
+		print "Unexpected error... trying again..."
+		print "tried to make gif from: " + str(choice)
+		continue
+
 	quote = ' '.join(quote)
 
 	# first pass reduce the amount of colors
-	if(os.path.getsize('star_wars.gif') > 2097152):
+	if(os.path.getsize('random.gif') > 2097152):
 		subprocess.call(['convert',
-						'star_wars.gif',
+						'random.gif',
 						'-layers',
 						'Optimize',
 						'-colors',
 						'64',
-						'star_wars.gif'])
+						'random.gif'])
 
 	# other passes reduce the size
-	while(os.path.getsize('star_wars.gif') > 2097152):
+	while(os.path.getsize('random.gif') > 2097152):
 		subprocess.call(['convert',
-						'star_wars.gif',
+						'random.gif',
 						'-resize',
 						'90%',
 						'-coalesce',
 						'-layers',
 						'optimize',
-						'star_wars.gif'])
+						'random.gif'])
 
 	try:
 		response = requests.post(
@@ -56,10 +72,10 @@ while True:
 			headers = headers,
 			data = {
 				'key': API_KEY,
-				'image': b64encode(open('star_wars.gif', 'rb').read()),
+				'image': b64encode(open('random.gif', 'rb').read()),
 				'type': 'base64',
-				'name': 'star_wars.gif',
-				'title': 'Star Wars Dot Gif'
+				'name': 'random.gif',
+				'title': 'Random Dot Gif'
 			}
 		)
 	except requests.exceptions.ConnectionError:
@@ -77,7 +93,7 @@ while True:
 	twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 
 
-	status = '"' + quote + '" ' + link + ' #starwarsgif'
+	status = '"' + quote + '" ' + link + ' #randomgif'
 
 	print "tweeting..."
 	twitter.update_status(status=status)
