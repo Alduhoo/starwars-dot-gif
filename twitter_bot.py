@@ -31,73 +31,78 @@ subs_path = config.get("general", "subs_path")
 # get choices
 choices = loadChoices(movies_path, subs_path)
 
-while True:
-	try:
-		choice = random.choice(choices)
-		quote = makeGif(choice, 0, rand=True)
-	except KeyboardInterrupt:
-		print "Ouch!"
-		exit()
-	except:
-		print "Unexpected error... trying again..."
-		print "tried to make gif from: " + str(choice)
-		continue
+def reduceGif(filename):
+    # first pass reduce the amount of colors
+    if(os.path.getsize(filename) > 2097152):
+        subprocess.call(['convert',
+                        filename,
+                        '-layers',
+                        'Optimize',
+                        '-colors',
+                        '64',
+                        filename])
 
-	quote = ' '.join(quote)
+    # other passes reduce the size
+    while(os.path.getsize(filename) > 2097152):
+        subprocess.call(['convert',
+                        filename,
+                        '-resize',
+                        '90%',
+                        '-coalesce',
+                        '-layers',
+                        'optimize',
+                        filename])
 
-	# first pass reduce the amount of colors
-	if(os.path.getsize('random.gif') > 2097152):
-		subprocess.call(['convert',
-						'random.gif',
-						'-layers',
-						'Optimize',
-						'-colors',
-						'64',
-						'random.gif'])
-
-	# other passes reduce the size
-	while(os.path.getsize('random.gif') > 2097152):
-		subprocess.call(['convert',
-						'random.gif',
-						'-resize',
-						'90%',
-						'-coalesce',
-						'-layers',
-						'optimize',
-						'random.gif'])
-
-	try:
-		response = requests.post(
-			url,
-			headers = headers,
-			data = {
-				'key': API_KEY,
-				'image': b64encode(open('random.gif', 'rb').read()),
-				'type': 'base64',
-				'name': 'random.gif',
-				'title': 'Random Dot Gif'
-			}
-		)
-	except requests.exceptions.ConnectionError:
-		# try again.
-		continue
+def tweetGif(filename, quote):
+    reduceGif(filename)
+    try:
+        response = requests.post(
+            url,
+            headers = headers,
+            data = {
+                'key': API_KEY,
+                'image': b64encode(open(filename, 'rb').read()),
+                'type': 'base64',
+                'name': filename,
+                'title': 'Random Dot Gif'
+            }
+        )
+    except requests.exceptions.ConnectionError:
+        # try again.
+        tweetGif(filename, quote)
 
 
-	try:
-		res_json = response.json()
-		link = res_json['data']['link']
-	except ValueError:
-		# try again.
-		continue
+    try:
+        res_json = response.json()
+        link = res_json['data']['link']
+    except ValueError:
+        # try again.
+        tweetGif(filename, quote)
 
-	twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+    twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 
+    status = '"' + quote + '" ' + link + ' #randomgif'
 
-	status = '"' + quote + '" ' + link + ' #randomgif'
+    twitter.update_status(status=status)
 
-	print "tweeting..."
-	twitter.update_status(status=status)
+if __name__ == '__main__':
+    while True:
+    	try:
+    		choice = random.choice(choices)
+    		quote = makeGif(choice, 0, rand=True)
+    	except KeyboardInterrupt:
+    		print "Ouch!"
+    		exit()
+    	except:
+    		print "Unexpected error... trying again..."
+    		print "tried to make gif from: " + str(choice)
+    		continue
 
-	print "sleeping..."
-	# sleep 1 hour
-	time.sleep(3600)
+    	quote = ' '.join(quote)
+
+    	print "tweeting..."
+    	tweetGif('random.gif', quote)
+
+    	print "sleeping..."
+    	# sleep 1 hour
+    	time.sleep(3600)

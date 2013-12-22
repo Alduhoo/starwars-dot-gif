@@ -26,13 +26,13 @@ def loadChoices(movies_path, subs_path):
         name = sub[sub.rfind('/') + 1:sub.find('.srt')]
         # TODO: find more elegant solution to solve srt ending with language code
         path = []
-        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.mp4"))
-        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.mkv"))
-        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.avi"))
-        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.mpg"))
-        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.divx"))
-        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.m4v"))
-        path.extend(glob.glob(movies_path + "/" + name[:8] + "*.mov"))
+        path.extend(glob.glob(movies_path + "/" + name[:name.find('.')] + "*.mp4"))
+        path.extend(glob.glob(movies_path + "/" + name[:name.find('.')] + "*.mkv"))
+        path.extend(glob.glob(movies_path + "/" + name[:name.find('.')] + "*.avi"))
+        path.extend(glob.glob(movies_path + "/" + name[:name.find('.')] + "*.mpg"))
+        path.extend(glob.glob(movies_path + "/" + name[:name.find('.')] + "*.divx"))
+        path.extend(glob.glob(movies_path + "/" + name[:name.find('.')] + "*.m4v"))
+        path.extend(glob.glob(movies_path + "/" + name[:name.find('.')] + "*.mov"))
         choices.append({ 'name': name, 'num': index, 'path': path[0], 'sub_path': sub})
         index += 1
     return choices
