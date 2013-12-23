@@ -3,9 +3,11 @@ import os
 import ConfigParser
 import time
 import subprocess
+import re
 
 from tumblpy import Tumblpy
 from makeGifs import makeGif
+from makeGifs import loadChoices
 
 config = ConfigParser.ConfigParser()
 config.read("config.cfg")
@@ -15,7 +17,13 @@ CONSUMER_KEY = config.get("tumblr", "consumer_key")
 CONSUMER_SECRET = config.get("tumblr", "consumer_secret")
 OAUTH_TOKEN = config.get("tumblr", "oauth_token")
 OAUTH_TOKEN_SECRET = config.get("tumblr", "oauth_token_secret")
+BLOG_URL = config.get("tumblr", "blog_url")
 
+movies_path = config.get("general", "movies_path")
+subs_path = config.get("general", "subs_path")
+
+# get choices
+choices = loadChoices(movies_path, subs_path)
 
 t = Tumblpy(
 	CONSUMER_KEY,
@@ -24,32 +32,49 @@ t = Tumblpy(
 	OAUTH_TOKEN_SECRET,
 )
 
-while True:
-	quote = makeGif(random.randint(4,6), 0, rand=True, frames=20)
-	quote = ' '.join(quote)
-
+def reduceGif(filename):
 	# reduce amount of colors, because tumblr sucks
 	subprocess.call(['convert',
-					'star_wars.gif',
+					filename,
 					'-layers',
 					'Optimize',
 					'-colors',
 					'64',
-					'star_wars.gif'])
-	while(os.path.getsize('star_wars.gif') > 1048576):
+					filename])
+	while(os.path.getsize(filename) > 1048576):
 		subprocess.call(['convert',
-						'star_wars.gif',
+						filename,
 						'-resize',
 						'90%',
 						'-coalesce',
 						'-layers',
 						'Optimize',
-						'star_wars.gif'])
+						filename])
 
-	photo = open('star_wars.gif', 'rb')
+def postGif(filename, quote, tags):
+	reduceGif(filename)
 
-	post = t.post('post', blog_url='http://starwarsgifsasaservice.tumblr.com', params={'type':'photo', 'caption': quote, 'data': photo, 'tags': 'star wars, gif'})
+	photo = open(filename, 'rb')
 
-	print "sleeping..."
-	# sleep 12 hours
-	time.sleep(43200)
+	post = t.post('post', blog_url=BLOG_URL, params={'type':'photo', 'caption': quote, 'data': photo, 'tags': ', '.join(tags)})
+
+if __name__ == '__main__':
+	while True:
+		choice = random.choice(choices)
+		try:
+			quote = makeGif(choice, 0, rand=True)
+		except:
+			print "Unexpected error..."
+			print "was trying to make gif from: " + str(choice)
+			continue
+		quote = ' '.join(quote)
+		m = re.search('\s\(\d\d\d\d\)', choice['name'])
+		title = choice['name'][:m.start()]
+
+		print "posting to tumblr..."
+		tags = ['randomDOTgif', 'gif', title]
+		postGif('random.gif', quote, tags)
+
+		print "sleeping..."
+		# sleep
+		time.sleep(900)

@@ -18,3 +18,4 @@ consumer_key: tumblr_consumer_key
 consumer_secret: tumblr_consumer_secret
 oauth_token: tumblr_oauth_token
 oauth_token_secret: tumblr_oauth_token_secret
+blog_url: http://starwarsgifsasaservice.tumblr.com
