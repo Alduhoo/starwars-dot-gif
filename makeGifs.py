@@ -33,8 +33,12 @@ def loadChoices(movies_path, subs_path):
         path.extend(glob.glob(movies_path + "/" + name[:name.find('.')] + "*.divx"))
         path.extend(glob.glob(movies_path + "/" + name[:name.find('.')] + "*.m4v"))
         path.extend(glob.glob(movies_path + "/" + name[:name.find('.')] + "*.mov"))
-        choices.append({ 'name': name, 'num': index, 'path': path[0], 'sub_path': sub})
-        index += 1
+	try:
+            choices.append({ 'name': name, 'num': index, 'path': path[0], 'sub_path': sub})
+        except IndexError:
+		print "Error finding movie for srt: %s" % sub
+		continue
+	index += 1
     return choices
 
 def striptags(data):

@@ -64,7 +64,7 @@ def tweetGif(filename, quote):
                 'image': b64encode(open(filename, 'rb').read()),
                 'type': 'base64',
                 'name': filename,
-                'title': 'Random Dot Gif'
+                'title': 'random dot gif'
             }
         )
     except requests.exceptions.ConnectionError:

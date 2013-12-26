@@ -61,18 +61,30 @@ def postGif(filename, quote, tags):
 if __name__ == '__main__':
 	while True:
 		choice = random.choice(choices)
+		tags = []
 		try:
-			quote = makeGif(choice, 0, rand=True)
+			quote = makeGif(choice, 0, rand=True, frames=20)
+		except KeyboardInterrupt:
+			print "Ouch..."
+			exit()
 		except:
 			print "Unexpected error..."
 			print "was trying to make gif from: " + str(choice)
 			continue
 		quote = ' '.join(quote)
 		m = re.search('\s\(\d\d\d\d\)', choice['name'])
-		title = choice['name'][:m.start()]
+		if m != None:
+			title = choice['name'][:m.start()]
+		else:
+			m = re.search('\sS\d\dE\d\d', choice['name'])
+			if m != None:
+				title = choice['name'][:m.start()]
+				tags = tags + [choice['name'][m.start():m.end()]]
+			else:
+				title = choice['name'][:choice['name'].find('.')]
 
-		print "posting to tumblr..."
-		tags = ['randomDOTgif', 'gif', title]
+		print "posting to tumblr -> " + title + "..."
+		tags = ['randomDOTgif', 'gif', title] + tags
 		postGif('random.gif', quote, tags)
 
 		print "sleeping..."
