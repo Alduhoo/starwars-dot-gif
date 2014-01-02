@@ -76,9 +76,10 @@ if __name__ == '__main__':
 		if m != None:
 			title = choice['name'][:m.start()]
 		else:
-			m = re.search('\sS\d\dE\d\d', choice['name'])
+			m = re.search('[\s.]S\d\dE\d\d', choice['name'])
 			if m != None:
 				title = choice['name'][:m.start()]
+				title = title.replace('.', ' ')
 				tags = tags + [choice['name'][m.start():m.end()]]
 			else:
 				title = choice['name'][:choice['name'].find('.')]
