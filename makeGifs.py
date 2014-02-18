@@ -170,6 +170,7 @@ def makeGif(choice, sub_index, rand=False, no_quote=False, custom_subtitle="", f
 
 	# create a fuckin' gif
 	print "generating gif..."
+	print str(choice)
 	writeGif(filename, images, nq=10, dither=True)
 
 	if rand:

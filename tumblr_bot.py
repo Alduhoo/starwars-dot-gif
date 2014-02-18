@@ -80,14 +80,14 @@ if __name__ == '__main__':
 			if m != None:
 				title = choice['name'][:m.start()]
 				title = title.replace('.', ' ')
-				tags = tags + [choice['name'][m.start():m.end()]]
+				tags = tags + [choice['name'][m.start() + 1:m.end()]]
 			else:
 				title = choice['name'][:choice['name'].find('.')]
 
-		print "posting to tumblr -> " + title + "..."
 		tags = ['randomDOTgif', 'gif', title] + tags
+		print "posting to tumblr -> " + str(tags) + "..."
 		postGif('random.gif', quote, tags)
 
 		print "sleeping..."
 		# sleep
-		time.sleep(900)
+		time.sleep(300)
